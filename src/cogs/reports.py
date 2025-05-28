@@ -9,7 +9,7 @@ from src.config import PRINTS_ENDPOINT, DISCORD_MAX_MESSAGE_LENGTH
 
 
 class Reports(commands.Cog):
-    """Komendy dla generowania raportów"""
+    """Commands for generating reports."""
 
     def __init__(self, bot):
         self.bot = bot
@@ -18,7 +18,7 @@ class Reports(commands.Cog):
 
     @commands.command(name="raport")
     async def generate_report(self, ctx, days: int = 7):
-        """Generuje raport o drukach z ostatnich X dni (domyślnie 7)."""
+        """Generates a report of prints from the last X days (default is 7)."""
         await ctx.send(f"Generuję raport z ostatnich {days} dni...")
 
         try:
@@ -30,13 +30,13 @@ class Reports(commands.Cog):
             else:
                 await ctx.send(f"Brak druków sejmowych z ostatnich {days} dni.")
         except Exception as e:
-            logging.error(f"Wystąpił błąd przy generowaniu raportu: {e}", exc_info=True)
+            logging.error(f"Error generating report: {e}", exc_info=True)
             await ctx.send("Wystąpił błąd przy generowaniu raportu ")
 
     @commands.command(name="ustaw_kanał")
     @commands.has_permissions(administrator=True)
     async def set_channel(self, ctx):
-        """Ustawia bieżący kanał jako kanał do raportów tygodniowych."""
+        """Sets the current channel as the channel for weekly reports."""
         self.report_channels.add(ctx.channel.id)
         await ctx.send(
             f"Kanał {ctx.channel.mention} został ustawiony jako kanał do raportów tygodniowych. "
@@ -45,6 +45,13 @@ class Reports(commands.Cog):
 
     @set_channel.error
     async def set_channel_error(self, ctx, error):
+        """
+        Handles errors for the set_channel command.
+
+        Args:
+            ctx (commands.Context): The context of the command.
+            error (commands.CommandError): The error that occurred.
+        """
         if isinstance(error, commands.MissingPermissions):
             await ctx.send("Nie masz uprawnień administratora do użycia tej komendy.")
 
@@ -54,7 +61,7 @@ class Reports(commands.Cog):
         if not isinstance(days, int) or days <= 0:
             raise ValueError("Liczba dni musi być dodatnią liczbą całkowitą.")
         logging.info(f"Fetching prints from {PRINTS_ENDPOINT} for the last {days} days")
-        # Pobierz wszystkie druki z API
+        # Fetch all prints from the API
         async with aiohttp.ClientSession() as session:
             try:
                 async with session.get(
@@ -63,8 +70,8 @@ class Reports(commands.Cog):
                     all_prints_response.raise_for_status()
                     all_prints = await all_prints_response.json()
             except aiohttp.ClientError as e:
-                logging.error(f"Błąd przy pobieraniu listy druków: {e}", exc_info=True)
-                raise Exception(f"Błąd przy pobieraniu listy druków: {e}")
+                logging.error(f"Error fetching prints list: {e}", exc_info=True)
+                raise Exception(f"Error fetching prints list: {e}")
 
             cutoff_date = (
                 datetime.datetime.now() - datetime.timedelta(days=days)
@@ -141,7 +148,9 @@ class Reports(commands.Cog):
             return []
 
     async def send_weekly_report(self):
-        """Send weekly report to all registered channels."""
+        """
+        Send weekly report to all registered channels.
+        """
         try:
             report_parts = await self._generate_report(7)
 
@@ -158,7 +167,7 @@ class Reports(commands.Cog):
                             )
                 except Exception as e:
                     logging.error(
-                        f"Błąd przy wysyłaniu raportu do kanału {channel_id}: {e}",
+                        f"Error sending report to channel {channel_id}: {e}",
                         exc_info=True,
                     )
 
@@ -176,11 +185,11 @@ class Reports(commands.Cog):
                                     )
                                 except Exception as e:
                                     logging.error(
-                                        f"Błąd przy wysyłaniu raportu do kanału {channel.id} (nazwa: {channel.name}): {e}",
+                                        f"Error sending report to channel {channel.id} (name: {channel.name}): {e}",
                                         exc_info=True,
                                     )
         except Exception as e:
             logging.error(
-                f"Wystąpił błąd przy generowaniu tygodniowego raportu: {e}",
+                f"Error generating weekly report: {e}",
                 exc_info=True,
             )

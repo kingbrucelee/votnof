@@ -35,7 +35,7 @@ class PrintWatcher(commands.Cog):
                                 data = await response.json()
                                 current_change_date = data.get("changeDate", "")
 
-                                # Jeśli data się zmieniła, powiadom użytkownika
+                                # If the date has changed, notify the user
                                 if (
                                     current_change_date
                                     and current_change_date != last_change_date

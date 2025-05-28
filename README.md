@@ -31,7 +31,17 @@ Ten bot Discordowy dostarcza informacji o drukach Sejmu oraz pozwala użytkownik
     pip install -r requirements.txt
     ```
 
-4.  **Skonfiguruj zmienne środowiskowe:**
+4.  **Formatowanie kodu (Black):**
+    Projekt używa [Black](https://github.com/psf/black) do automatycznego formatowania kodu. Zaleca się uruchomienie Black na swoim kodzie przed przesłaniem zmian, aby zapewnić spójny styl. Możesz zainstalować Black za pomocą pip:
+    ```bash
+    pip install black
+    ```
+    A następnie uruchomić go w katalogu głównym projektu:
+    ```bash
+    black .
+    ```
+
+5.  **Skonfiguruj zmienne środowiskowe:**
     Utwórz plik `.env` w głównym katalogu projektu i dodaj token swojego bota Discordowego:
     ```
     DISCORD_TOKEN=TWÓJ_TOKEN_BOTA_DISCORD
@@ -70,3 +80,15 @@ Ten bot komunikuje się z API Sejmu 10 kadencji: `https://api.sejm.gov.pl/sejm/t
 
 *   **Endpoint Druków:** `/prints`
 *   **Endpoint Procesów:** `/processes`
+
+## Wskazówki dla Współtwórców
+
+Chętnie przyjmujemy wszelkie wkłady w rozwój bota! Oto kilka wskazówek na początek:
+
+*   Zapoznaj się ze strukturą projektu (`Struktura Projektu` powyżej), aby zrozumieć, gdzie znajdują się poszczególne części kodu.
+*   Jeśli chcesz dodać nową komendę, rozważ utworzenie nowego "cog" w katalogu `src/cogs/`.
+*   Dla zadań działających w tle, zajrzyj do katalogu `src/tasks/`.
+*   Funkcje pomocnicze, które mogą być używane w wielu miejscach, powinny znaleźć się w `src/utils/`.
+*   Pamiętaj o dodawaniu docstringów do swojego kodu, aby wyjaśnić jego działanie.
+*   Użyj formattera Black (`Formatowanie kodu (Black)` powyżej), aby Twój kod był spójny ze stylem projektu.
+*   Jeśli masz pytania lub potrzebujesz pomocy, nie wahaj się otworzyć zgłoszenie (issue) w repozytorium.

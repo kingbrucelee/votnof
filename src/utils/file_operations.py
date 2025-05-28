@@ -2,13 +2,13 @@ import json
 import os
 from src.config import WATCHED_PRINTS_FILE
 
-# Struktura do przechowywania obserwowanych druków
+# Structure for storing watched prints
 # Format: {user_id: {print_number: last_change_date}}
 watched_prints = {}
 
 
 def load_watched_prints():
-    """Załaduj obserwowane druki z pliku."""
+    """Loads watched prints from the file."""
     global watched_prints
     if os.path.exists(WATCHED_PRINTS_FILE):
         with open(WATCHED_PRINTS_FILE, "r") as f:
@@ -19,14 +19,14 @@ def load_watched_prints():
 
 
 def save_watched_prints():
-    """Zapisz obserwowane druki do pliku."""
+    """Saves watched prints to the file."""
     os.makedirs(os.path.dirname(WATCHED_PRINTS_FILE), exist_ok=True)
     with open(WATCHED_PRINTS_FILE, "w") as f:
         json.dump(watched_prints, f)
 
 
 def get_watched_prints():
-    """Zwraca słownik obserwowanych druków."""
+    """Returns the dictionary of watched prints."""
     global watched_prints
     if not watched_prints:
         load_watched_prints()
@@ -34,7 +34,7 @@ def get_watched_prints():
 
 
 def add_watched_print(user_id, print_nr, change_date):
-    """Dodaj druk do obserwowanych."""
+    """Adds a print to the watched list."""
     global watched_prints
     user_id = str(user_id)
 
@@ -47,7 +47,7 @@ def add_watched_print(user_id, print_nr, change_date):
 
 
 def remove_watched_print(user_id, print_nr):
-    """Usuń druk z obserwowanych."""
+    """Removes a print from the watched list."""
     global watched_prints
     user_id = str(user_id)
 
@@ -59,7 +59,7 @@ def remove_watched_print(user_id, print_nr):
 
 
 def update_print_change_date(user_id, print_nr, new_date):
-    """Aktualizuj datę zmiany dla obserwowanego druku."""
+    """Updates the change date for a watched print."""
     global watched_prints
     user_id = str(user_id)
 
@@ -71,7 +71,7 @@ def update_print_change_date(user_id, print_nr, new_date):
 
 
 def get_user_watched_prints(user_id):
-    """Pobierz listę druków obserwowanych przez użytkownika."""
+    """Retrieves the list of prints watched by a user."""
     global watched_prints
     user_id = str(user_id)
 

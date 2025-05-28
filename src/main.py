@@ -19,6 +19,12 @@ logging.basicConfig(
 
 
 async def setup(bot):
+    """
+    Sets up and adds the bot's cogs.
+
+    Args:
+        bot (commands.Bot): The bot instance.
+    """
     await bot.add_cog(PrintsInfo(bot))
     await bot.add_cog(PrintsWatch(bot))
     await bot.add_cog(Reports(bot))
@@ -26,13 +32,20 @@ async def setup(bot):
 
 
 def main():
+    """
+    The main function to set up and run the Discord bot.
+    """
     intents = discord.Intents.default()
     intents.message_content = True
     bot = commands.Bot(command_prefix="!", intents=intents)
 
     @bot.event
     async def on_ready():
-        logging.info(f"Zalogowano jako {bot.user} (ID: {bot.user.id})")
+        """
+        Handles the bot's ready event.
+        Logs bot information and starts the weekly report task.
+        """
+        logging.info(f"Logged in as {bot.user} (ID: {bot.user.id})")
         logging.info("------")
 
         start_weekly_report(bot)
@@ -42,6 +55,13 @@ def main():
 
     @bot.event
     async def on_command_error(ctx, error):
+        """
+        Handles errors that occur during command invocation.
+
+        Args:
+            ctx (commands.Context): The context of the command.
+            error (commands.CommandError): The error that occurred.
+        """
         if isinstance(error, commands.CommandNotFound):
             await ctx.send(
                 "Nie znaleziono takiej komendy. Użyj `!pomoc` aby zobaczyć listę dostępnych komend."
@@ -57,13 +77,20 @@ def main():
         elif isinstance(error, commands.MissingPermissions):
             await ctx.send("Nie masz wystarczających uprawnień do użycia tej komendy.")
         else:
-            logging.error(f"Wystąpił błąd: {error}", exc_info=True)
+            logging.error(f"An error occurred: {error}", exc_info=True)
             await ctx.send("Wystąpił błąd. Spróbuj ponownie później.")
 
-    # "druk nr X"
+    # Handle "druk nr X" message format
     @bot.event
     async def on_message(message):
-        # Nie reaguj na wiadomości od botów
+        """
+        Handles incoming messages.
+        Processes commands and a specific message format ("druk nr X").
+
+        Args:
+            message (discord.Message): The incoming message.
+        """
+        # Ignore messages from bots
         if message.author.bot:
             return
 

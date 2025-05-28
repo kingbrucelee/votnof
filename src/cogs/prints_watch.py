@@ -17,9 +17,9 @@ class PrintsWatch(commands.Cog):
 
     @commands.command(name="obserwuj")
     async def watch_print(self, ctx, nr: str):
-        """Dodaje druk do obserwowanych."""
+        """Adds a print to the watched list."""
         user_id = str(ctx.author.id)
-        # Sprawdź, czy numer druku jest poprawny
+        # Check if the print number is valid
         if not nr.isdigit():
             await ctx.send("Proszę podać poprawny numer druku (tylko cyfry).")
             return
@@ -28,7 +28,7 @@ class PrintsWatch(commands.Cog):
             await ctx.send("Proszę podać numer druku.")
             return
         try:
-            # Sprawdź czy druk istnieje
+            # Check if the print exists
             async with aiohttp.ClientSession() as session:
                 async with session.get(f"{PRINTS_ENDPOINT}/{nr}") as response:
                     if response.status != 200:
@@ -42,7 +42,7 @@ class PrintsWatch(commands.Cog):
 
                     data = await response.json()
 
-            # Dodaj do obserwowanych
+            # Add to watched
             change_date = data.get("changeDate", "")
             added = add_watched_print(user_id, nr, change_date)
 
@@ -54,7 +54,7 @@ class PrintsWatch(commands.Cog):
 
     @commands.command(name="anuluj")
     async def unwatch_print(self, ctx, nr: str):
-        """Usuwa druk z obserwowanych."""
+        """Removes a print from the watched list."""
         user_id = str(ctx.author.id)
 
         removed = remove_watched_print(user_id, nr)
@@ -65,7 +65,7 @@ class PrintsWatch(commands.Cog):
 
     @commands.command(name="moje_druki")
     async def list_watched_prints(self, ctx):
-        """Wyświetla listę obserwowanych druków."""
+        """Displays the list of watched prints."""
         user_id = str(ctx.author.id)
 
         watched = get_user_watched_prints(user_id)

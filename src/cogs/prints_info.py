@@ -41,17 +41,17 @@ class PrintsInfo(commands.Cog):
 
     @commands.command(name="druk")
     async def print_info(self, ctx, nr: str):
-        """Wyświetla informacje o druku o podanym numerze."""
+        """Displays information about a Sejm print with the given number."""
         try:
-            # Sprawdź, czy numer druku jest poprawny
+            # Check if the print number is valid
             if not nr.isdigit():
                 await ctx.send("Proszę podać poprawny numer druku (tylko cyfry).")
                 return
-            nr = nr.strip()  # Usuń białe znaki z początku i końca
+            nr = nr.strip()  # Remove leading/trailing whitespace
             if not nr:
                 await ctx.send("Proszę podać numer druku.")
                 return
-            # Pobierz dane o druku
+            # Fetch print data
             logging.info(f"Fetching print data for nr: {nr}")
             async with aiohttp.ClientSession() as session:
                 async with session.get(f"{PRINTS_ENDPOINT}/{nr}") as response:
@@ -66,12 +66,12 @@ class PrintsInfo(commands.Cog):
 
                     data = await response.json()
 
-            # Przygotuj dane
+            # Prepare data
             title = data.get("title", "Brak tytułu")
             delivery_date = data.get("deliveryDate", "Brak daty")
             change_date = data.get("changeDate", "Brak daty")
 
-            # Przygotuj informacje o załącznikach
+            # Prepare attachments information
             attachments_info = ""
             if "attachments" in data and data["attachments"]:
                 for i, attachment in enumerate(data["attachments"]):
@@ -84,14 +84,14 @@ class PrintsInfo(commands.Cog):
             else:
                 attachments_info = "Brak załączników"
 
-            # Przygotuj informacje o procesie
+            # Prepare process information
             process_info = "**Proces:** Brak informacji\n"
             process_data = None
 
             async with aiohttp.ClientSession() as session:
                 process_data = await self._fetch_process_data(session, nr)
 
-                # Jeśli nie znaleziono procesu, sprawdź czy jest procesPrint
+                # If process not found, check if processPrint exists
                 if not process_data or (
                     not process_data.get("passed") and not process_data.get("stages")
                 ):
@@ -114,7 +114,7 @@ class PrintsInfo(commands.Cog):
                     info = "Brak informacji o etapie"
                 process_info = f"**Etap procesu:** {info}\n"
 
-            # Przygotuj wiadomość
+            # Prepare message
             message = (
                 f"**Nr druku:** {nr}\n"
                 f"**Tytuł:** {title}\n"
@@ -127,13 +127,13 @@ class PrintsInfo(commands.Cog):
             await ctx.send(message)
         except Exception as e:
             logging.error(
-                f"Wystąpił błąd w komendzie !druk dla druku {nr}: {e}", exc_info=True
+                f"Error in !druk command for print {nr}: {e}", exc_info=True
             )
             await ctx.send(f"Wystąpił błąd: {str(e)}")
 
     @commands.command(name="pomoc")
     async def help_command(self, ctx):
-        """Wyświetla listę dostępnych komend."""
+        """Displays a list of available commands."""
         commands_list = (
             "**Dostępne komendy:**\n"
             "**!druk [numer]** - Wyświetla informacje o druku o podanym numerze\n"
