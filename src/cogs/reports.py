@@ -5,6 +5,7 @@ import datetime
 import logging
 import urllib.parse
 import discord.utils
+import textwrap
 from src.config import PRINTS_ENDPOINT, DISCORD_MAX_MESSAGE_LENGTH
 
 
@@ -22,11 +23,11 @@ class Reports(commands.Cog):
         await ctx.send(f"Generuję raport z ostatnich {days} dni...")
 
         try:
-            report_parts = await self._generate_report(days)
+            report_messages = await self._generate_report(days)
 
-            if report_parts:
-                for i, part in enumerate(report_parts):
-                    await ctx.send(f"{part}\n*Część {i+1}/{len(report_parts)}*")
+            if report_messages:
+                for message in report_messages:
+                    await ctx.send(message)
             else:
                 await ctx.send(f"Brak druków sejmowych z ostatnich {days} dni.")
         except Exception as e:
@@ -115,7 +116,10 @@ class Reports(commands.Cog):
                     process_print_numbers = print_item.get("processPrint", [])
 
                     escaped_title = discord.utils.escape_markdown(title)
-                    report_line_content = f"Druk nr {print_nr}: {escaped_title[:300]}{'...' if len(escaped_title) > 300 else ''}"
+                    shortened_title = textwrap.shorten(
+                        escaped_title, width=300, placeholder="..."
+                    )
+                    report_line_content = f"Druk nr {print_nr}: {shortened_title}"
                     # If there are attachments, create a link to the first one
                     if attachments:
                         first_attachment = attachments[0]
@@ -132,18 +136,34 @@ class Reports(commands.Cog):
 
                     report_lines.append(f"- {report_line_content}{process_info_suffix}")
                 report_lines.append("")
-            report_parts = []
-            current_part = f"**Raport druków sejmowych z ostatnich {days} dni:**\n\n"
-            for line in report_lines:
-                if len(current_part) + len(line) + 1 > DISCORD_MAX_MESSAGE_LENGTH:
-                    report_parts.append(current_part)
-                    current_part = line + "\n"
-                else:
-                    current_part += line + "\n"
-            if current_part:
-                report_parts.append(current_part)
 
-            return report_parts
+            report_parts = []
+            current_message_lines = []
+            initial_header = f"**Raport druków sejmowych z ostatnich {days} dni:**\n\n"
+            current_message_lines.append(initial_header)
+
+            for line in report_lines:
+                temp_content_length = (
+                    sum(len(l) for l in current_message_lines) + len(line) + 1
+                )
+
+                if temp_content_length > DISCORD_MAX_MESSAGE_LENGTH:
+                    report_parts.append("".join(current_message_lines))
+                    current_message_lines = [line + "\n"]
+                else:
+                    current_message_lines.append(line + "\n")
+
+            if current_message_lines:
+                report_parts.append("".join(current_message_lines))
+
+            final_report_messages = []
+            total_parts = len(report_parts)
+            for i, part_content in enumerate(report_parts):
+                suffix = f"\n*Część {i+1}/{total_parts}*"
+                final_message = part_content + suffix
+                final_report_messages.append(final_message)
+
+            return final_report_messages
         else:
             return []
 
@@ -152,19 +172,17 @@ class Reports(commands.Cog):
         Send weekly report to all registered channels.
         """
         try:
-            report_parts = await self._generate_report(7)
+            report_messages = await self._generate_report(7)
 
-            if not report_parts:
+            if not report_messages:
                 return
 
             for channel_id in self.report_channels:
                 try:
                     channel = self.bot.get_channel(channel_id)
                     if channel:
-                        for i, part in enumerate(report_parts):
-                            await channel.send(
-                                f"{part}\n*Część {i+1}/{len(report_parts)}*"
-                            )
+                        for message in report_messages:
+                            await channel.send(message)
                 except Exception as e:
                     logging.error(
                         f"Error sending report to channel {channel_id}: {e}",
@@ -178,11 +196,9 @@ class Reports(commands.Cog):
                         and "sejm" in channel.name.lower()
                     ):
                         if channel.id not in self.report_channels:
-                            for i, part in enumerate(report_parts):
+                            for message in report_messages:
                                 try:
-                                    await channel.send(
-                                        f"{part}\n*Część {i+1}/{len(report_parts)}*"
-                                    )
+                                    await channel.send(message)
                                 except Exception as e:
                                     logging.error(
                                         f"Error sending report to channel {channel.id} (name: {channel.name}): {e}",

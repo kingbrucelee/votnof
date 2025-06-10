@@ -126,9 +126,7 @@ class PrintsInfo(commands.Cog):
 
             await ctx.send(message)
         except Exception as e:
-            logging.error(
-                f"Error in !druk command for print {nr}: {e}", exc_info=True
-            )
+            logging.error(f"Error in !druk command for print {nr}: {e}", exc_info=True)
             await ctx.send(f"Wystąpił błąd: {str(e)}")
 
     @commands.command(name="pomoc")
